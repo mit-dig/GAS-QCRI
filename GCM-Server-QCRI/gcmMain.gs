@@ -1,5 +1,5 @@
 var db = ScriptDb.getMyDb();
-
+//hi i mae a change
 function clearDB() {
   var result = db.query({});
   db.removeBatch(result, false); 
