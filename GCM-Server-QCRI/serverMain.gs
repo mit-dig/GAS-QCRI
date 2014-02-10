@@ -8,10 +8,11 @@ function doPost(eventInfo) {
   } else if(eventInfo.parameter.type === 'sendAll'){
 	// TODO authentication to make sure device is registered 
 	sendGCM2All(eventInfo.parameter.gcmMessage);
-  } else if (eventInfo.postData.contents){  // sends CSPARQL results to all devices
-    sendGCM2All(eventInfo.postData.contents);
-  } else if (eventInfo.query) { // received results from the proxy server
-	processResult(eventInfo.query, eventInfo.result);
+  } else if (eventInfo.postData.contents){  // sends CSPARQL results out
+    var contents = JSON.parse(eventInfo.postData.contents);
+    if (contents.query) {
+      processResult(contents.query, contents.result);
+    }
   }
   var app = UiApp.getActiveApplication();
   return app;
