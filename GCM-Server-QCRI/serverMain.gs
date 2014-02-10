@@ -48,7 +48,7 @@ function testSaveGroups() {
 		  "query" : "query1"
   };
   var req2 = {
-		  "regId" : "APA91bH4h_6WtpEgRVK7d4zWyfMx7gCOttgO_qPv1-JL3xV0lVykOKx7ZTDnCJMeWGy2YxpO_C07oVRTP_mryFQJURzjycGHfBL-ros_mcCY_FDHi-CVqRrr82idXYGbKBejGnx3IMFDvMNsv-EY965txXhpSrzg8SbCw4K-PdVRVbf_gVI_vnI",
+		  "regId" : "APA91bGPCAPOxEFQQEgCM_a9E2js1jEhZSpe6oGLHXvI2bomDi3DBP7yVj8i4WmqV_3Pqqm6y574V0E_nw8GedFPLOR7s7GQCiF4UXub18nYlbNcBkQ05ztmlkzZM38r3JaVwbEERn77lmtteM-BDdNy-ULo5Xki9dE61qMUVxybO8ZjkncTseg",
 		  "query" : "query2"
   };
   db.save(req1);
