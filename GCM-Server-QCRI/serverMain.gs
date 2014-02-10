@@ -11,14 +11,7 @@ function doPost(eventInfo) {
   } else if (eventInfo.postData.contents){  // sends CSPARQL results to all devices
     sendGCM2All(eventInfo.postData.contents);
   } else if (eventInfo.query) { // received results from the proxy server
-	var query = eventInfo.query;
-	var entries = db.query({"query" : query});
-	var devices = [];
-	while (entries.hasNext()) {
-		  var current = entries.next();
-		  devices.push(current.regId);
-	}
-	sendGCM(devices, GCM_MESSAGE_PLAYLOAD_KEY, eventInfo.result);
+	processResult(eventInfo.query, eventInfo.result);
   }
   var app = UiApp.getActiveApplication();
   return app;
@@ -35,6 +28,16 @@ function processReg(eventInfo) {
   }
 }
 
+function processResult(query, result) {
+  var entries = db.query({"query" : query});
+  var devices = [];
+  while (entries.hasNext()) {
+	  var current = entries.next();
+	  devices.push(current.regId);
+  }
+  sendGCM(devices, GCM_MESSAGE_PLAYLOAD_KEY, result);
+}
+
 function testSendAll(){
   sendGCM2All('test fghgfghfg');
 }
@@ -43,15 +46,25 @@ function testSaveGroups() {
   var req1 = {
 		  "regId" : "APA91bFFn0WIOOIf81FodJpX7ZFQGElBICDUd6wExTKvavjZ0rWZSQmeSfis4h2RTqapgD6sS_XGjsFnxISkuUHijzm0lp0kxNmL4UoJI3Hg_KG3TiQ0riCoYPQYHdzg6jFfDKAa9txkN1L47FGtwoS2ec433Hahk7PvLrJ0c2tUaztOt4UE9UI",
 		  "query" : "query1"
-  }
+  };
   var req2 = {
-		  "regId" : "",
+		  "regId" : "APA91bH4h_6WtpEgRVK7d4zWyfMx7gCOttgO_qPv1-JL3xV0lVykOKx7ZTDnCJMeWGy2YxpO_C07oVRTP_mryFQJURzjycGHfBL-ros_mcCY_FDHi-CVqRrr82idXYGbKBejGnx3IMFDvMNsv-EY965txXhpSrzg8SbCw4K-PdVRVbf_gVI_vnI",
 		  "query" : "query2"
-  }
+  };
   db.save(req1);
   db.save(req2);
 }
 
 function testFindGroups() {
   Logger.log(db.query({"query" : "query1"}).next().regId);
+  Logger.log(db.query({"query" : "query2"}).next().regId);
+}
+
+function testProcessResult() {
+  var query1 = "query1";
+  var query2 = "query2";
+  var result1 = "result1";
+  var result2 = "result2";
+  processResult(query1, result1);
+  processResult(query2, result2);
 }
