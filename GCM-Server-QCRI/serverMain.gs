@@ -3,7 +3,19 @@ function doGet() {
 }
 
 function doPost(eventInfo) {
-  if(eventInfo.parameter.regId) {
+ if(eventInfo.parameter.type === 'subscribe'){
+    // construct the query and register it with CSPARQL 
+    // 1. build query using the parameters, inserting a generated UUID into the query and local DB <UUID, regId>
+    var uuid = generateUUID();
+    var querytext = buildQuery(eventInfo.parameter.parameter, uuid);
+    db.save({"regId" : eventInfo.parameter.regId,
+             "uuid" : uuid
+      });
+    
+    // 2. putting to the CSPARQL engine
+    var serverUrl = "http://128.30.6.63:8175/queries/" + uuid;
+    var response = putRequest(querytext, serverUrl);
+  } else if(eventInfo.parameter.regId) {
     processReg(eventInfo);
   } else if(eventInfo.parameter.type === 'sendAll'){
 	// TODO authentication to make sure device is registered 
