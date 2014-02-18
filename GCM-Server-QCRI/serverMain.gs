@@ -15,15 +15,29 @@ function doPost(eventInfo) {
     // 2. putting to the CSPARQL engine
     var serverUrl = "http://128.30.6.63:8175/queries/" + uuid;
     var response = putRequest(querytext, serverUrl);
+    
+    // 3. register this GCM server as an observer for the query
+    var payload = 'https://script.google.com/macros/s/AKfycbwsWFiK5SmwBmawRcKgeQDBbKQVovDFhU_eMb9LzivvMehBQuqe/exec';
+    var response = postRequest(payload, serverUrl);
+    
   } else if(eventInfo.parameter.regId) {
     processReg(eventInfo);
   } else if(eventInfo.parameter.type === 'sendAll'){
 	// TODO authentication to make sure device is registered 
 	sendGCM2All(eventInfo.parameter.gcmMessage);
   } else if (eventInfo.postData.contents){  // sends CSPARQL results out
+	MyLog("CSPARQL", "eventInfo.postData.contents", eventInfo.postData.contents);
     var contents = JSON.parse(eventInfo.postData.contents);
-    if (contents.query) {
-      processResult(contents.query, contents.result);
+    MyLog("CSPARQL", "var contents", contents);
+    // Check if the results contain a UUID
+    var firstLevel = contents['http://streamreasoning.org/ontologies/sr4ld2013-onto#uuid']; 
+    MyLog("CSPARQL", "var firstLevel", firstLevel);
+    if (firstLevel!= undefined) {
+    	var uuid = firstLevel['http://streamreasoning.org/ontologies/sr4ld2013-onto#is'][0]['value'];
+    	MyLog("CSPARQL", "var uuid", uuid);
+    	delete contents['http://streamreasoning.org/ontologies/sr4ld2013-onto#uuid'];
+    	MyLog("CSPARQL", "var contents after deletion", contents);
+    	processResult(uuid, contents);
     }
   }
   var app = UiApp.getActiveApplication();
@@ -41,36 +55,53 @@ function processReg(eventInfo) {
   }
 }
 
-function processResult(query, result) {
-  var entries = db.query({"query" : query});
+function processResult(uuid, result) {
+  var entries = db.query({"uuid" : uuid});
+  MyLog("processResult", "var entries", entries);
   var devices = [];
   while (entries.hasNext()) {
 	  var current = entries.next();
 	  devices.push(current.regId);
   }
-  sendGCM(devices, GCM_MESSAGE_PLAYLOAD_KEY, result);
+  MyLog("processResult", "var devices", devices);
+  var output = parseResult(result);
+  sendGCM(devices, GCM_MESSAGE_PLAYLOAD_KEY, output);
 }
 
 function testSaveGroups() {
-  var req1 = {
-		  "regId" : "APA91bFFn0WIOOIf81FodJpX7ZFQGElBICDUd6wExTKvavjZ0rWZSQmeSfis4h2RTqapgD6sS_XGjsFnxISkuUHijzm0lp0kxNmL4UoJI3Hg_KG3TiQ0riCoYPQYHdzg6jFfDKAa9txkN1L47FGtwoS2ec433Hahk7PvLrJ0c2tUaztOt4UE9UI",
-		  "query" : "query1"
-  };
-  var req2 = {
-		  "regId" : "APA91bGPCAPOxEFQQEgCM_a9E2js1jEhZSpe6oGLHXvI2bomDi3DBP7yVj8i4WmqV_3Pqqm6y574V0E_nw8GedFPLOR7s7GQCiF4UXub18nYlbNcBkQ05ztmlkzZM38r3JaVwbEERn77lmtteM-BDdNy-ULo5Xki9dE61qMUVxybO8ZjkncTseg",
-		  "query" : "query2"
-  };
-  db.save(req1);
-  db.save(req2);
-}
+  var result = { 
+      "http://example.com/test_AT_example.com/1386486533774/1392323955318" : { 
+        "http://rdfs.org/sioc/ns#description" : [ { 
+          "type" : "uri" ,
+          "value" : ""
+        }
+         ] ,
+        "http://streamreasoning.org/ontologies/sr4ld2013-onto#place" : [ { 
+          "type" : "literal" ,
+          "value" : "Cambridge"
+        }
+         ] ,
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" : [ { 
+          "type" : "uri" ,
+          "value" : "http://rdfs.org/sioc/ns#MicroblogPost"
+        }
+         ] ,
+        "http://rdfs.org/sioc/ns#attachment" : [ { 
+          "type" : "uri" ,
+          "value" : "http://twitpic.com/show/full/dvf0wl"
+        }
+         ] ,
+        "http://rdfs.org/sioc/ns#title" : [ { 
+          "type" : "uri" ,
+          "value" : "Test"
+        }
+         ]
+      }
+    };
 
-function testProcessResult() {
-  var query1 = "query1";
-  var query2 = "query2";
-  var result1 = "result1";
-  var result2 = "result2";
-  processResult(query1, result1);
-  processResult(query2, result2);
+  for (var key in result) {
+    Logger.log(result[key]);
+  }
 }
 
 /**

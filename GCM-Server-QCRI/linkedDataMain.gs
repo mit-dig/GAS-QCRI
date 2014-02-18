@@ -19,10 +19,9 @@ function buildQuery(parameter, uuid) {
   var querytext = "REGISTER STREAM " + uuid + " AS " +
   "PREFIX : <http://streamreasoning.org/ontologies/sr4ld2013-onto#> " +
   "PREFIX sioc: <http://rdfs.org/sioc/ns#> " +
-  "PREFIX dbp: <http://dbpedia.org/property/place> " +
-  "CONSTRUCT { ?post a sioc:MicroblogPost; sioc:attachment ?attachement; sioc:description ?desc; sioc:title ?title; dbp:place '" + parameter + "'. :uuid :is '" + uuid + "'. } " +
-  "FROM STREAM <http://ex.org/fs> [RANGE 1m STEP 10s] " +
-  "WHERE { ?post a sioc:MicroblogPost; sioc:attachment ?attachement; sioc:description ?desc; sioc:title ?title; dbp:place '" + parameter +"'. } ";
+  "CONSTRUCT { ?post a sioc:MicroblogPost; sioc:attachment ?attachment; sioc:description ?desc; sioc:title ?title; :place '" + parameter + "'. :uuid :is '" + uuid + "'. } " +
+  "FROM STREAM <http://ex.org/gcm> [RANGE 1m STEP 10s] " +
+  "WHERE { ?post a sioc:MicroblogPost; sioc:attachment ?attachment; sioc:description ?desc; sioc:title ?title; :place ?place. FILTER (str(?place) = '" + parameter +"')} ";
   return querytext;
 }
 
@@ -32,4 +31,23 @@ function putRequest(querytext, serverUrl) {
       'payload' : querytext,
      };
   return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
+}
+
+function postRequest(payload, serverUrl) {
+  var urlFetchOptions =  
+     {'method' : 'post',
+      'payload' : payload,
+     };
+  return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
+}
+
+function parseResult(result) {
+  for (var key in result) {
+    var title = result[key]["http://rdfs.org/sioc/ns#title"][0].value;
+    var description = result[key]["http://rdfs.org/sioc/ns#description"][0].value;
+    var image = result[key]["http://rdfs.org/sioc/ns#attachment"][0].value;
+  }
+  var output = 'result,' + title + ',' + image + ',' + description;
+  MyLog("parseResult", "var output", output);
+  return output;
 }
