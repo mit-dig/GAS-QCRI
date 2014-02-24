@@ -7,10 +7,11 @@ function doPost(eventInfo) {
     // construct the query and register it with CSPARQL 
     // 1. build query using the parameters, inserting a generated UUID into the query and local DB <UUID, regId>
     var uuid = generateUUID();
-    var querytext = buildQuery(eventInfo.parameter.parameter, uuid);
-    db.save({"regId" : eventInfo.parameter.regId,
-             "uuid" : uuid
-      });
+    var querytext = buildQuery(eventInfo.parameter.lat, eventInfo.parameter.long, uuid);
+    
+    // Delete old uuids associated with the regId, since those are no longer valid
+    // Then add the new uuid with the regId
+    replaceUUID(eventInfo.parameter.regId, uuid);
     
     // 2. putting to the CSPARQL engine
     var serverUrl = "http://128.30.6.63:8175/queries/" + uuid;
@@ -26,17 +27,17 @@ function doPost(eventInfo) {
 	// TODO authentication to make sure device is registered 
 	sendGCM2All(eventInfo.parameter.gcmMessage);
   } else if (eventInfo.postData.contents){  // sends CSPARQL results out
-	MyLog("CSPARQL", "eventInfo.postData.contents", eventInfo.postData.contents);
+	//MyLog("CSPARQL", "eventInfo.postData.contents", eventInfo.postData.contents);
     var contents = JSON.parse(eventInfo.postData.contents);
-    MyLog("CSPARQL", "var contents", contents);
+    //MyLog("CSPARQL", "var contents", contents);
     // Check if the results contain a UUID
     var firstLevel = contents['http://streamreasoning.org/ontologies/sr4ld2013-onto#uuid']; 
-    MyLog("CSPARQL", "var firstLevel", firstLevel);
+    //MyLog("CSPARQL", "var firstLevel", firstLevel);
     if (firstLevel!= undefined) {
     	var uuid = firstLevel['http://streamreasoning.org/ontologies/sr4ld2013-onto#is'][0]['value'];
-    	MyLog("CSPARQL", "var uuid", uuid);
+    	//MyLog("CSPARQL", "var uuid", uuid);
     	delete contents['http://streamreasoning.org/ontologies/sr4ld2013-onto#uuid'];
-    	MyLog("CSPARQL", "var contents after deletion", contents);
+    	//MyLog("CSPARQL", "var contents after deletion", contents);
     	processResult(uuid, contents);
     }
   }
@@ -57,51 +58,22 @@ function processReg(eventInfo) {
 
 function processResult(uuid, result) {
   var entries = db.query({"uuid" : uuid});
-  MyLog("processResult", "var entries", entries);
+  //MyLog("processResult", "var entries", entries);
   var devices = [];
   while (entries.hasNext()) {
 	  var current = entries.next();
 	  devices.push(current.regId);
   }
-  MyLog("processResult", "var devices", devices);
-  var output = parseResult(result);
-  sendGCM(devices, GCM_MESSAGE_PLAYLOAD_KEY, output);
+  //MyLog("processResult", "var devices", devices);
+  if (devices.length != 0) {
+    var output = parseResult(result);
+    sendGCM(devices, GCM_MESSAGE_PLAYLOAD_KEY, output);
+  }
 }
 
 function testSaveGroups() {
-  var result = { 
-      "http://example.com/test_AT_example.com/1386486533774/1392323955318" : { 
-        "http://rdfs.org/sioc/ns#description" : [ { 
-          "type" : "uri" ,
-          "value" : ""
-        }
-         ] ,
-        "http://streamreasoning.org/ontologies/sr4ld2013-onto#place" : [ { 
-          "type" : "literal" ,
-          "value" : "Cambridge"
-        }
-         ] ,
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#type" : [ { 
-          "type" : "uri" ,
-          "value" : "http://rdfs.org/sioc/ns#MicroblogPost"
-        }
-         ] ,
-        "http://rdfs.org/sioc/ns#attachment" : [ { 
-          "type" : "uri" ,
-          "value" : "http://twitpic.com/show/full/dvf0wl"
-        }
-         ] ,
-        "http://rdfs.org/sioc/ns#title" : [ { 
-          "type" : "uri" ,
-          "value" : "Test"
-        }
-         ]
-      }
-    };
-
-  for (var key in result) {
-    Logger.log(result[key]);
-  }
+  var devices =[];
+  Logger.log(devices.length != 0);
 }
 
 /**
