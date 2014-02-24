@@ -45,6 +45,16 @@ function postRequest(payload, serverUrl) {
   return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
 }
 
+function deleteRequest(serverUrl) {
+  var urlFetchOptions =  
+     {'method' : 'delete',
+      'headers' : {
+        'Cache-Control' : 'no-cache'
+      },
+     };
+  return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
+}
+
 function parseResult(result) {
   for (var key in result) {
     var title = result[key]["http://rdfs.org/sioc/ns#title"][0].value;
@@ -63,6 +73,8 @@ function replaceUUID(regId, new_uuid) {
     var current = entries.next();
     if (current["uuid"] != undefined) {
       db.remove(current);
+      var queryurl = SERVER_URL + current["uuid"];
+      var response = deleteRequest(queryurl);
     }
   }
   // save new entry

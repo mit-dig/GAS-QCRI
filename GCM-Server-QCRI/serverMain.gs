@@ -14,7 +14,7 @@ function doPost(eventInfo) {
     replaceUUID(eventInfo.parameter.regId, uuid);
     
     // 2. putting to the CSPARQL engine
-    var serverUrl = "http://128.30.6.63:8175/queries/" + uuid;
+    var serverUrl = SERVER_URL + uuid;
     var response = putRequest(querytext, serverUrl);
     
     // 3. register this GCM server as an observer for the query
