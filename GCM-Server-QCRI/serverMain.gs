@@ -27,7 +27,6 @@ function doPost(eventInfo) {
 	// TODO authentication to make sure device is registered 
 	sendGCM2All(eventInfo.parameter.gcmMessage);
   } else if (eventInfo.postData.contents){  // sends CSPARQL results out
-	//MyLog("CSPARQL", "eventInfo.postData.contents", eventInfo.postData.contents);
     var contents = JSON.parse(eventInfo.postData.contents);
     //MyLog("CSPARQL", "var contents", contents);
     // Check if the results contain a UUID

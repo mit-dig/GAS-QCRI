@@ -18,13 +18,16 @@ function generateUUID() {
 function buildQuery(lat, long, uuid) {
   var querytext = "REGISTER STREAM " + uuid + " AS " +
   "PREFIX : <http://streamreasoning.org/ontologies/sr4ld2013-onto#> " +
+  "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> " +
+  "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>" +
   "PREFIX sioc: <http://rdfs.org/sioc/ns#> " +
   "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
   "CONSTRUCT { ?post a sioc:MicroblogPost; sioc:attachment ?attachment; sioc:description ?desc; sioc:title ?title. :uuid :is '" + uuid + "'. } " +
-  "FROM STREAM <http://ex.org/gcm> [RANGE 1m STEP 10s] " +
-  "WHERE { ?post a sioc:MicroblogPost; sioc:attachment ?attachment; sioc:description ?desc; sioc:title ?title; geo:lat ?lat; geo:long ?long . " +
-    "FILTER( ( ((?lat-" + lat + ")*(?lat-" + lat + ")) < 0.01*0.01) ) " +
-    "FILTER( ( ((?long-" + long + ")*(?long-" + long + ")) < 0.01*0.01) )" +
+  "FROM STREAM <http://ex.org/gcm> [RANGE 10s STEP 5s] " +
+  "WHERE { ?post a sioc:MicroblogPost; sioc:attachment ?attachment; sioc:description ?desc; sioc:title ?title; <http://hxl.humanitarianresponse.info/ns/#atLocation> ?location. " +
+  "?location geo:lat ?lat; geo:long ?long . " +
+  "FILTER( ( ((?lat-(" + lat + "))*(?lat-(" + lat + "))) < (0.01*0.01)) ) " +
+  "FILTER( ( ((?long-(" + long + "))*(?long-(" + long + "))) < (0.01*0.01)) )" +
   "}";
   return querytext;
 }
@@ -33,6 +36,9 @@ function putRequest(querytext, serverUrl) {
   var urlFetchOptions =  
      {'method' : 'put',
       'payload' : querytext,
+      'headers' : {
+        'Cache-Control' : 'no-cache'
+      },
      };
   return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
 }
@@ -41,6 +47,9 @@ function postRequest(payload, serverUrl) {
   var urlFetchOptions =  
      {'method' : 'post',
       'payload' : payload,
+      'headers' : {
+        'Cache-Control' : 'no-cache'
+      },
      };
   return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
 }
