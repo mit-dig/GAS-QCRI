@@ -9,10 +9,10 @@ function doPost(eventInfo) {
     var uuid = generateUUID();
     var querytext = buildQuery(eventInfo.parameter.topic, eventInfo.parameter.lat, eventInfo.parameter.long, uuid);
     
-    // Delete old uuids associated with the regId, since those are no longer valid
+    // Delete old uuids associated with the regId with the same topic, since those are no longer valid
     // Then add the new uuid with the regId
-    //deleteOldUUID(eventInfo.parameter.regId, uuid);
-    addNewUUID(eventInfo.parameter.regId, uuid);
+    deleteOldUUID(eventInfo.parameter.regId, eventInfo.parameter.topic);
+    addNewUUID(eventInfo.parameter.regId, uuid, eventInfo.parameter.topic);
     
     // 2. putting to the CSPARQL engine
     var serverUrl = SERVER_URL + uuid;

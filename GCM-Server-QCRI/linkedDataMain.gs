@@ -23,7 +23,7 @@ function buildQuery(topic, lat, long, uuid) {
   "PREFIX sioc: <http://rdfs.org/sioc/ns#> " +
   "PREFIX geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> " +
   "CONSTRUCT { ?post a sioc:MicroblogPost; sioc:attachment ?attachment; sioc:description ?desc; sioc:topic ?topic. :uuid :is '" + uuid + "'. } " +
-  "FROM STREAM <http://ex.org/gcm> [RANGE 10s STEP 5s] " +
+  "FROM STREAM <http://ex.org/gcm> [RANGE 2s STEP 2s] " +
   "WHERE { ?post a sioc:MicroblogPost; sioc:attachment ?attachment; sioc:description ?desc; sioc:topic ?topic; <http://hxl.humanitarianresponse.info/ns/#atLocation> ?location. " +
   "?location geo:lat ?lat; geo:long ?long . " +
   "FILTER (str(?topic) = '" + topic +"') " +
@@ -61,6 +61,7 @@ function deleteRequest(serverUrl) {
       'headers' : {
         'Cache-Control' : 'no-cache'
       },
+      'muteHttpExceptions': true,
      };
   return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
 }
@@ -76,12 +77,12 @@ function parseResult(result) {
   return output;
 }
 
-function deleteOldUUID(regId, new_uuid) {
+function deleteOldUUID(regId, topic) {
   // find and delete old entries
   var entries = db.query({"regId": regId});
   while (entries.hasNext()) {
     var current = entries.next();
-    if (current["uuid"] != undefined) {
+    if (current["uuid"] != undefined && current["topic"] == topic) {
       db.remove(current);
       var queryurl = SERVER_URL + current["uuid"];
       var response = deleteRequest(queryurl);
@@ -89,9 +90,10 @@ function deleteOldUUID(regId, new_uuid) {
   }
 }
 
-function addNewUUID(regId, new_uuid) {
+function addNewUUID(regId, new_uuid, topic) {
   // save new entry
   db.save({"regId" : regId,
-           "uuid" : new_uuid
+           "uuid" : new_uuid,
+           "topic" : topic
   });
 }
