@@ -7,11 +7,12 @@ function doPost(eventInfo) {
     // construct the query and register it with CSPARQL 
     // 1. build query using the parameters, inserting a generated UUID into the query and local DB <UUID, regId>
     var uuid = generateUUID();
-    var querytext = buildQuery(eventInfo.parameter.lat, eventInfo.parameter.long, uuid);
+    var querytext = buildQuery(eventInfo.parameter.topic, eventInfo.parameter.lat, eventInfo.parameter.long, uuid);
     
     // Delete old uuids associated with the regId, since those are no longer valid
     // Then add the new uuid with the regId
-    replaceUUID(eventInfo.parameter.regId, uuid);
+    //deleteOldUUID(eventInfo.parameter.regId, uuid);
+    addNewUUID(eventInfo.parameter.regId, uuid);
     
     // 2. putting to the CSPARQL engine
     var serverUrl = SERVER_URL + uuid;
