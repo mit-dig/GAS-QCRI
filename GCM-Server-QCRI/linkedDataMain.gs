@@ -40,8 +40,9 @@ function putRequest(querytext, serverUrl) {
       'headers' : {
         'Cache-Control' : 'no-cache'
       },
+      'muteHttpExceptions': true,
      };
-  return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
+  return UrlFetchApp.fetch(serverUrl,urlFetchOptions);
 }
 
 function postRequest(payload, serverUrl) {
@@ -51,8 +52,9 @@ function postRequest(payload, serverUrl) {
       'headers' : {
         'Cache-Control' : 'no-cache'
       },
+      'muteHttpExceptions': true,
      };
-  return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
+  return UrlFetchApp.fetch(serverUrl,urlFetchOptions);
 }
 
 function deleteRequest(serverUrl) {
@@ -63,7 +65,7 @@ function deleteRequest(serverUrl) {
       },
       'muteHttpExceptions': true,
      };
-  return UrlFetchApp.fetch(serverUrl,urlFetchOptions).getContentText();
+  return UrlFetchApp.fetch(serverUrl,urlFetchOptions);
 }
 
 function parseResult(result) {

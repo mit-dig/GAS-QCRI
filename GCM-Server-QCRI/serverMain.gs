@@ -22,12 +22,18 @@ function doPost(eventInfo) {
     var payload = 'https://script.google.com/macros/s/AKfycbwsWFiK5SmwBmawRcKgeQDBbKQVovDFhU_eMb9LzivvMehBQuqe/exec';
     var response = postRequest(payload, serverUrl);
     
-  } else if(eventInfo.parameter.regId) {
+    // MyLog("postRequest", "var response", response.getResponseCode());
+    if (response.getResponseCode() == 200) {
+      sendGCM2One(eventInfo.parameter.regId, 'subscribe,Successfully subscribed to topic!');
+    } else {
+      sendGCM2One(eventInfo.parameter.regId, 'subscribe,Subscription failed. Please try again!');
+    }
+ } else if(eventInfo.parameter.regId) {
     processReg(eventInfo);
-  } else if(eventInfo.parameter.type === 'sendAll'){
+ } else if(eventInfo.parameter.type === 'sendAll'){
 	// TODO authentication to make sure device is registered 
 	sendGCM2All(eventInfo.parameter.gcmMessage);
-  } else if (eventInfo.postData.contents){  // sends CSPARQL results out
+ } else if (eventInfo.postData.contents){  // sends CSPARQL results out
     var contents = JSON.parse(eventInfo.postData.contents);
     //MyLog("CSPARQL", "var contents", contents);
     // Check if the results contain a UUID
@@ -40,9 +46,9 @@ function doPost(eventInfo) {
     	//MyLog("CSPARQL", "var contents after deletion", contents);
     	processResult(uuid, contents);
     }
-  }
-  var app = UiApp.getActiveApplication();
-  return app;
+ }
+ var app = UiApp.getActiveApplication();
+ return app;
 }
 
 function processReg(eventInfo) {  
